@@ -1,5 +1,5 @@
 import time
-from time import gmtime, strftime
+from time import gmtime, strftime, localtime
 import urllib.parse
 from typing import Optional, Dict, Any, List
 
@@ -75,7 +75,7 @@ class FtxClient:
 
 
 second=3600
-print("Mio FTX USD放貸複利程式 v0.1")
+print("Mio FTX USD放貸複利程式 v0.2")
 while True:
     with open('apikey.json', 'r') as json_file:
         api = json.load(json_file)
@@ -83,7 +83,7 @@ while True:
     balanceUSD = mio.get_balances('USD')
     mio.set_lending_offer('USD', balanceUSD, 1e-6)
     if balanceUSD != 0:
-        print(strftime("%Y-%m-%d %H:%M:%S", gmtime())+" 已複利")
+        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新貸款數額：",balanceUSD, "USD")
     else:
         print("USD帳戶餘額為0")
     time.sleep(second)
