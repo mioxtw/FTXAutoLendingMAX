@@ -61,29 +61,64 @@ class FtxClient:
         coin_balance  = mm[coin_index]['total']
         return coin_balance
 
+
     def set_lending_offer(self, coin: str, size: float, rate:float):
-        return self._post(f'spot_margin/offers', {'coin': coin,
+        return self._post('spot_margin/offers', {'coin': coin,
                                      'size': size,
                                      'rate': rate
                                      })
 
-    def readConfFile(self,fileName):
-        count = 0 ;
-        confList=[]
-        with open("ftxOpt/"+fileName+'.json') as json_file:
-            data = json.load(json_file)
+    def get_lening_rate(self) -> List[dict]:
+        return self._get('spot_margin/lending_history')
 
 
 second=3600
-print("Mio FTX USD放貸複利程式 v0.2")
+print("--------------------------------------------------------------------")
+print("FTX放貸複利程式 v0.3")
+print("")
+print("程式作者: Mio Su<mioxtw@gmail.com>")
+print("")
+print("使用方法：")
+print("請修改apikey.json，填入你的API_KEY和API_SECRET")
+print("enableUSD是開啟複利USD，預設是true，關閉請改成false，以此類推")
+print("minRateUSD是最小時利率，預設是0.000001")
+print("--------------------------------------------------------------------")
+print("")
+print("如果本程式對你有幫助，行有餘力請Donate窮苦的碼農程式員，感謝大爺賞賜")
+print("")
+print("-------我的錢包位址在此---------------------------------------------")
+print("USDT(TRC-20): TWx22d9XmMtMeb6mEg48n5C3kwS31iicDf")
+print("USDT(ERC-20): 0x10C85D6AE5266E2Af2cFAA688B5348c4c7119062")
+print("ETH: 0x10C85D6AE5266E2Af2cFAA688B5348c4c7119062")
+print("BTC: 3BYVUVfZJTUXWGKsjjucWKdScKTSJRw8Ck")
+print("--------------------------------------------------------------------")
+print("")
+print("")
 while True:
     with open('apikey.json', 'r') as json_file:
-        api = json.load(json_file)
-    mio = FtxClient(api["api-key"], api["api-secret"])
+        data = json.load(json_file)
+
+    enableUSD = data["enableUSD"]
+    enableUSDT = data["enableUSDT"]
+    minRateUSD = data["minRateUSD"]
+    minRateUSDT = data["minRateUSDT"]
+
+    mio = FtxClient(data["api-key"], data["api-secret"])
     balanceUSD = mio.get_balances('USD')
-    mio.set_lending_offer('USD', balanceUSD, 1e-6)
-    if balanceUSD != 0:
-        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新貸款數額：",balanceUSD, "USD")
+    balanceUSDT = mio.get_balances('USDT')
+    
+    if balanceUSD >= 1 and enableUSD == True:
+        mio.set_lending_offer('USD', balanceUSD, minRateUSD)
+        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新USD 貸款數額：",balanceUSD, "USD")
     else:
-        print("USD帳戶餘額為0")
+        if enableUSD == True:
+            print("USD帳戶餘額少於 1 USD，無法放貸")
+
+    if balanceUSDT >= 1 and enableUSDT == True:
+        mio.set_lending_offer('USDT', balanceUSDT, minRateUSDT)
+        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新USDT貸款數額：",balanceUSDT, "USDT")
+    else:
+        if enableUSDT == True:
+            print("USDT帳戶餘額少於 1 USDT，無法放貸")
+
     time.sleep(second)
