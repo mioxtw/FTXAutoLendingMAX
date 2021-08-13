@@ -68,8 +68,14 @@ class FtxClient:
                                      'rate': rate
                                      })
 
-    def get_lening_rate(self) -> List[dict]:
+    def get_lening_history(self) -> List[dict]:
         return self._get('spot_margin/lending_history')
+
+    def get_lending_rates(self, coinName: str) -> List[dict]:
+        mm = self._get('spot_margin/lending_rates')
+        coin_index = [ x['coin'] for x in mm ].index(coinName)
+        estimate  = mm[coin_index]['estimate']
+        return estimate
 
 
 second=3600
@@ -106,17 +112,19 @@ while True:
     mio = FtxClient(data["api-key"], data["api-secret"])
     balanceUSD = mio.get_balances('USD')
     balanceUSDT = mio.get_balances('USDT')
+    lendingRateUSD = mio.get_lending_rates('USD')
+    lendingRateUSDT = mio.get_lending_rates('USDT')
     
     if balanceUSD >= 1 and enableUSD == True:
         mio.set_lending_offer('USD', balanceUSD, minRateUSD)
-        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新USD 貸款數額：",balanceUSD, "USD")
+        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新USD 貸款數額：",balanceUSD, "USD ", "下一次預估貸款利率：",lendingRateUSD*24*365*100,"%")
     else:
         if enableUSD == True:
             print("USD帳戶餘額少於 1 USD，無法放貸")
 
     if balanceUSDT >= 1 and enableUSDT == True:
         mio.set_lending_offer('USDT', balanceUSDT, minRateUSDT)
-        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新USDT貸款數額：",balanceUSDT, "USDT")
+        print(strftime("%Y-%m-%d %H:%M:%S", localtime())+" 已更新USDT貸款數額：",balanceUSDT, "USDT ", "下一次預估貸款利率：",lendingRateUSDT*24*365*100,"%")
     else:
         if enableUSDT == True:
             print("USDT帳戶餘額少於 1 USDT，無法放貸")
