@@ -80,7 +80,7 @@ class FtxClient:
 
 second=3600
 print("--------------------------------------------------------------------")
-print("FTX放貸複利程式 v0.3")
+print("FTX放貸複利程式 v0.4")
 print("")
 print("程式作者: Mio Su<mioxtw@gmail.com>")
 print("")
